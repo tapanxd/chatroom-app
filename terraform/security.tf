@@ -28,6 +28,15 @@ resource "aws_security_group" "web_server" {
     cidr_blocks = var.ssh_cidr_blocks
   }
 
+  # Add this new rule for port 3000  
+  ingress {
+    from_port   = 3000
+    to_port     = 3000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Application port"
+  }
+
   # Outbound
   egress {
     from_port   = 0
