@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SECURE CHANNEL</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;700&display=swap');
+    
+    body {
+      font-family: 'Inconsolata', monospace;
+      background-color: #000000;
+      color: #00ff00;
+      margin: 0;
+      padding: 0;
+      line-height: 1.4;
+      overflow: hidden;
+      height: 100vh;
+    }
+    
+    /* Subtle scanline effect */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+      background-size: 100% 4px;
+      z-index: 1000;
+      pointer-events: none;
+      opacity: 0.15;
+    }
+    
+    .header {
+      background-color: #000000;
+      color: #00ccff;
+      padding: 5px 10px;
+      border-bottom: 1px solid #003300;
+      display: flex;
+      justify-content: space-between;
+      font-weight: bold;
+    }
+    
+    .header-left {
+      color: #00ff00;
+    }
+    
+    .header-right {
+      text-align: right;
+    }
+    
+    .main-container {
+      display: flex;
+      height: calc(100vh - 30px);
+    }
+    
+    .sidebar {
+      width: 220px;
+      border-right: 1px solid #003300;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .sidebar-section {
+      margin-bottom: 20px;
+    }
+    
+    .sidebar-title {
+      color: #00ff00;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #003300;
+      padding-bottom: 5px;
+      font-size: 14px;
+    }
+    
+    .chat-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .chat-messages {
+      flex-grow: 1;
+      padding: 10px;
+      overflow-y: auto;
+      background-color: #000000;
+    }
+    
+    .chat-input-container {
+      border-top: 1px solid #003300;
+      padding: 10px;
+      display: flex;
+      position: relative;
+    }
+    
+    .chat-input {
+      flex-grow: 1;
+      background-color: #000000;
+      color: #00ff00;
+      border: none;
+      font-family: 'Inconsolata', monospace;
+      font-size: 14px;
+      padding: 5px;
+      caret-color: transparent; /* Hide default cursor */
+    }
+    
+    .chat-input:focus {
+      outline: none;
+    }
+    
+    .prompt {
+      color: #00ccff;
+      margin-right: 5px;
+    }
+    
+    .message {
+      margin-bottom: 5px;
+      word-wrap: break-word;
+    }
+    
+    .message-timestamp {
+      color: #666666;
+      margin-right: 10px;
+    }
+    
+    .message-username {
+      color: #00ccff;
+      margin-right: 10px;
+    }
+    
+    .message-system {
+      color: #888888;
+      font-style: italic;
+    }
+    
+    .message-content {
+      color: #00ff00;
+    }
+    
+    .message-highlight {
+      color: #ffcc00;
+    }
+    
+    .status-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-bottom: 15px;
+    }
+    
+    .status-button {
+      background-color: #000000;
+      border: 1px solid #00ff00;
+      color: #00ff00;
+      padding: 3px 8px;
+      font-family: 'Inconsolata', monospace;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    
+    .status-button:hover {
+      background-color: #003300;
+    }
+    
+    .user-list {
+      flex: 1;
+    }
+    
+    .user-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+    
+    .user-status {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    
+    .status-online {
+      background-color: #00ff00;
+      box-shadow: 0 0 5px #00ff00;
+    }
+    
+    .status-away {
+      background-color: #ffcc00;
+      box-shadow: 0 0 5px #ffcc00;
+    }
+    
+    .status-dark {
+      background-color: #ff0000;
+      box-shadow: 0 0 5px #ff0000;
+    }
+    
+    .status-ghost {
+      background-color: #666666;
+      box-shadow: 0 0 5px #666666;
+    }
+    
+    .user-name {
+      color: #00ff00;
+    }
+    
+    .current-user {
+      color: #00ccff;
+    }
+    
+    .registration {
+      margin-bottom: 15px;
+    }
+    
+    .registration input {
+      background-color: #000000;
+      border: 1px solid #00ff00;
+      color: #00ff00;
+      padding: 5px;
+      width: 100%;
+      margin-bottom: 5px;
+      font-family: 'Inconsolata', monospace;
+      caret-color: transparent; /* Hide default cursor */
+    }
+    
+    .registration button {
+      background-color: #000000;
+      border: 1px solid #00ff00;
+      color: #00ff00;
+      padding: 5px 10px;
+      font-family: 'Inconsolata', monospace;
+      cursor: pointer;
+      width: 100%;
+    }
+    
+    .registration button:hover {
+      background-color: #003300;
+    }
+    
+    .system-message {
+      color: #888888;
+      font-style: italic;
+      margin: 10px 0;
+      border-top: 1px dashed #333333;
+      border-bottom: 1px dashed #333333;
+      padding: 5px 0;
+    }
+    
+    .status-change {
+      color: #ffcc00;
+      font-style: italic;
+      margin: 5px 0;
+    }
+    
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      background-color: #000000;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background-color: #003300;
+      border: 1px solid #00ff00;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background-color: #000000;
+    }
+    
+    .blinking-cursor {
+      animation: blink 1s step-end infinite;
+      color: #00ff00;
+      position: absolute;
+      left: 0;
+      top: 0;
+      pointer-events: none;
+    }
+    
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+    
+    .cursor-container {
+      position: relative;
+      display: inline-block;
+    }
+    
+    /* Hide default cursor for all inputs */
+    input {
+      caret-color: transparent;
+    }
+    
+    /* Chat controls */
+    .chat-controls {
+      display: flex;
+      justify-content: flex-end;
+      padding: 5px 10px;
+      border-bottom: 1px solid #003300;
+    }
+    
+    .chat-control-button {
+      background-color: #000000;
+      border: 1px solid #ff3300;
+      color: #ff3300;
+      padding: 3px 8px;
+      font-family: 'Inconsolata', monospace;
+      font-size: 12px;
+      cursor: pointer;
+      margin-left: 5px;
+    }
+    
+    .chat-control-button:hover {
+      background-color: #330000;
+    }
+    
+    /* Termination modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1001;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+    }
+    
+    .modal-content {
+      background-color: #000000;
+      border: 1px solid #00ff00;
+      margin: 15% auto;
+      padding: 20px;
+      width: 50%;
+      max-width: 500px;
+    }
+    
+    .modal-title {
+      color: #ff3300;
+      margin-bottom: 15px;
+      font-weight: bold;
+    }
+    
+    .modal-input {
+      width: 100%;
+      background-color: #000000;
+      border: 1px solid #00ff00;
+      color: #00ff00;
+      padding: 8px;
+      margin-bottom: 15px;
+      font-family: 'Inconsolata', monospace;
+    }
+    
+    .modal-buttons {
+      display: flex;
+      justify-content:  monospace;
+    }
+    
+    .modal-buttons {
+      display: flex;
+      justify-content: flex-end;
+    }
+    
+    .modal-button {
+      background-color: #000000;
+      border: 1px solid #00ff00;
+      color: #00ff00;
+      padding: 5px 10px;
+      font-family: 'Inconsolata', monospace;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+    
+    .modal-button.confirm {
+      border-color: #ff3300;
+      color: #ff3300;
+    }
+    
+    .modal-button:hover {
+      background-color: #003300;
+    }
+    
+    .modal-button.confirm:hover {
+      background-color: #330000;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-left">CONNECTION: ENCRYPTED</div>
+    <div class="header-center">SECURE CHANNEL :: OPERATION SKYFALL</div>
+    <div class="header-right" id="headerStatus">USERS ONLINE: 0</div>
+  </div>
+  
+  <div class="main-container">
+    <div class="sidebar">
+      <div class="sidebar-section" id="registration">
+        <div class="sidebar-title">CURRENT IDENTITY:</div>
+        <div class="registration">
+          <div class="cursor-container">
+            <input type="text" id="username" placeholder="Enter handle..." autocomplete="off">
+            <span class="blinking-cursor" id="usernameCursor">█</span>
+          </div>
+          <button onclick="registerAndHide()">CONNECT</button>
+        </div>
+      </div>
+      
+      <div class="sidebar-section" id="statusControls" style="display: none;">
+        <div class="sidebar-title">SET STATUS:</div>
+        <div class="status-buttons">
+          <button class="status-button" onclick="changeStatus('online')">ONLINE</button>
+          <button class="status-button" onclick="changeStatus('away')">AWAY</button>
+          <button class="status-button" onclick="changeStatus('do not disturb')">DARK</button>
+          <button class="status-button" onclick="changeStatus('offline')">GHOST</button>
+        </div>
+      </div>
+      
+      <div class="sidebar-section">
+        <div class="sidebar-title">ACTIVE OPERATIVES</div>
+        <div class="user-list" id="userList">
+          <!-- User list will be populated here -->
+          <div class="user-item">
+            <div class="user-status status-ghost"></div>
+            <div class="user-name">NO_USERS_CONNECTED</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="chat-container">
+      <div class="chat-controls" id="chatControls" style="display: none;">
+        <button class="chat-control-button" onclick="openTerminateModal()">TERMINATE CHAT</button>
+      </div>
+      
+      <div class="chat-messages" id="chatMessages">
+        <!-- Chat messages will be populated here -->
+        <div class="system-message">
+          --- SECURE CONNECTION ESTABLISHED ---
+        </div>
+        <div class="system-message">
+          --- WELCOME TO OPERATION SKYFALL ---
+        </div>
+      </div>
+      
+      <div class="chat-input-container">
+        <span class="prompt" id="promptUsername">GUEST@SECURE:~$</span>
+        <div class="cursor-container" style="flex-grow: 1;">
+          <input 
+            type="text" 
+            id="messageInput" 
+            class="chat-input" 
+            placeholder="Enter message..." 
+            disabled
+            onkeypress="handleKeyPress(event)"
+            autocomplete="off"
+          >
+          <span class="blinking-cursor" id="messageCursor">█</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Terminate Chat Modal -->
+  <div id="terminateModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-title">TERMINATE CURRENT CHAT SESSION</div>
+      <p>This will archive the current chat to secure storage and start a new session.</p>
+      <div class="cursor-container" style="width: 100%;">
+        <input 
+          type="text" 
+          id="terminateReason" 
+          class="modal-input" 
+          placeholder="Reason for termination (optional)..." 
+          autocomplete="off"
+        >
+        <span class="blinking-cursor" id="terminateReasonCursor">█</span>
+      </div>
+      <div class="modal-buttons">
+        <button class="modal-button" onclick="closeTerminateModal()">CANCEL</button>
+        <button class="modal-button confirm" onclick="terminateChat()">TERMINATE</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Load Socket.IO client from CDN -->
+  <script src="https://cdn.socket.io/4.6.2/socket.io.min.js"></script>
+  
+  <!-- Load our client script as a module -->
+  <script type="module" src="/js/client.js"></script>
+</body>
+</html>
