@@ -25,13 +25,26 @@ resource "aws_instance" "web_server" {
   
   # Add dependencies to ensure resources are created before the EC2 instance
   depends_on = [
+    # Core infrastructure
     aws_ecr_repository.app_repository,
     aws_dynamodb_table.user_table,
     aws_dynamodb_table.connections_table,
     aws_dynamodb_table.messages_table,
     aws_s3_bucket.archive_bucket,
     aws_sqs_queue.message_queue,
-    null_resource.docker_build_push  # Add dependency on the Docker build/push resource
+    null_resource.docker_build_push,
+    
+    # IAM resources
+    aws_iam_role.ec2_role,
+    aws_iam_instance_profile.ec2_profile,
+    aws_iam_role_policy_attachment.dynamodb_full_access,
+    aws_iam_role_policy_attachment.s3_full_access,
+    aws_iam_role_policy_attachment.sqs_full_access,
+    aws_iam_role_policy_attachment.cloudwatch_full_access,
+    aws_iam_role_policy_attachment.ecr_full_access,
+    
+    # Security group
+    aws_security_group.web_server
   ]
 
   user_data = <<-EOF
