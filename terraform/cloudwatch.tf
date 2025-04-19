@@ -23,6 +23,11 @@ resource "aws_cloudwatch_metric_alarm" "ec2_cpu" {
   }
   
   tags = local.common_tags
+  
+  # Add dependency to ensure the EC2 instance is fully created
+  depends_on = [
+    aws_instance.web_server
+  ]
 }
 
 # CloudWatch Alarm for DynamoDB Read Capacity
@@ -43,6 +48,11 @@ resource "aws_cloudwatch_metric_alarm" "dynamodb_read" {
   }
   
   tags = local.common_tags
+  
+  # Add dependency to ensure the DynamoDB table is fully created
+  depends_on = [
+    aws_dynamodb_table.user_table
+  ]
 }
 
 # CloudWatch Alarm for DynamoDB Write Capacity
@@ -63,6 +73,11 @@ resource "aws_cloudwatch_metric_alarm" "dynamodb_write" {
   }
   
   tags = local.common_tags
+  
+  # Add dependency to ensure the DynamoDB table is fully created
+  depends_on = [
+    aws_dynamodb_table.user_table
+  ]
 }
 
 # CloudWatch Alarm for SQS Queue
@@ -83,6 +98,11 @@ resource "aws_cloudwatch_metric_alarm" "sqs_messages" {
   }
   
   tags = local.common_tags
+  
+  # Add dependency to ensure the SQS queue is fully created
+  depends_on = [
+    aws_sqs_queue.message_queue
+  ]
 }
 
 # CloudWatch Dashboard
@@ -144,4 +164,11 @@ resource "aws_cloudwatch_dashboard" "main" {
       }
     ]
   })
+  
+  # Add dependencies to ensure all referenced resources are fully created
+  depends_on = [
+    aws_instance.web_server,
+    aws_dynamodb_table.user_table,
+    aws_sqs_queue.message_queue
+  ]
 }
